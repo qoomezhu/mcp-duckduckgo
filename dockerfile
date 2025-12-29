@@ -1,19 +1,19 @@
-FROM python:3.11-slim
+FROM node:20-slim
 
 WORKDIR /app
 
 # 安装系统依赖
 RUN apt-get update && \
-    apt-get install -y git curl && \
+    apt-get install -y python3 python3-pip && \
     rm -rf /var/lib/apt/lists/*
 
-# 安装 mcp-duckduckgo
-RUN pip install --no-cache-dir git+https://github.com/gianlucamazza/mcp-duckduckgo.git
+# 安装 uv 和 duckduckgo-mcp-server
+RUN pip3 install --break-system-packages uv && \
+    uv pip install --system duckduckgo-mcp-server
 
-# 安装 supergateway 用于将 STDIO 转为 HTTP
-RUN pip install --no-cache-dir supergateway
+# 安装 supergateway
+RUN npm install -g supergateway
 
-EXPOSE 3000
+EXPOSE 8000
 
-# 使用 supergateway 将 STDIO MCP 转换为 SSE HTTP 服务
-CMD ["supergateway", "--stdio", "mcp-duckduckgo", "--port", "3000", "--host", "0.0.0.0"]
+CMD ["supergateway", "--stdio", "duckduckgo-mcp-server", "--port", "8000"]
